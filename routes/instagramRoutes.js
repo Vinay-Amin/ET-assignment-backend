@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user'); // Ensure this is at the top if not already imported
 const { getInstagramAuthURL, instagramAuthCallback } = require('../controllers/instagramController');
+const axios = require('axios');
 
 // Instagram Auth Routes
 router.get('/auth', getInstagramAuthURL);
@@ -45,8 +46,6 @@ router.post('/webhook', (req, res) => {
   return res.sendStatus(200);
 });
 
-
-const axios = require('axios');
 
 // Instagram Media Route
 router.get('/media', async (req, res) => {
@@ -95,11 +94,80 @@ router.get('/me', async (req, res) => {
 
 router.get('/user', async (req, res) => {
   try {
-    const user = await User.findOne().sort({ createdAt: -1 });
+    const user = await User.findOne({ isLoggedIn: true }).sort({ createdAt: -1 });
     if (!user) return res.status(404).json({ error: 'No user found' });
     res.status(200).json({ user });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+router.get('/logout', async (req, res) => {
+  try {
+    // Assuming you have a way to identify the current user (e.g., req.user or req.query.userId)
+    const userId = req.query.userId; // Replace this with your actual user identification logic
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required to log out' });
+    }
+
+    const user = await User.findByIdAndUpdate(userId, { isLoggedIn: false });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Logout failed' });
+  }
+});
+
+router.get('/comments/:mediaId', async (req, res) => {
+  const { mediaId } = req.params;
+
+  try {
+    const user = await User.findOne({ isLoggedIn: true });
+
+    if (!user) return res.status(401).json({ error: 'User not logged in' });
+
+    const commentsRes = await axios.get(`https://graph.facebook.com/v16.0/${mediaId}/comments`, {
+      params: {
+        access_token: user.accessToken
+      }
+    });
+
+    res.status(200).json({ comments: commentsRes.data.data });
+  } catch (err) {
+    console.error('Error fetching comments:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
+});
+
+router.post('/comments/:mediaId/reply', async (req, res) => {
+  const { mediaId } = req.params;
+  const { message } = req.body;
+
+  try {
+    const user = await User.findOne({ isLoggedIn: true });
+    if (!user) return res.status(401).json({ error: 'User not logged in' });
+
+    const replyRes = await axios.post(
+      `https://graph.facebook.com/v16.0/${mediaId}/comments`,
+      null,
+      {
+        params: {
+          message,
+          access_token: user.accessToken
+        }
+      }
+    );
+
+    res.status(200).json({ success: true, replyId: replyRes.data.id });
+  } catch (err) {
+    console.error('Reply error:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to post reply' });
   }
 });
 

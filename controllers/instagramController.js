@@ -2,8 +2,9 @@ const axios = require('axios');
 const User = require('../models/user');
 
 exports.getInstagramAuthURL = (req, res) => {
-  const authURL = `https://www.facebook.com/v16.0/dialog/oauth?client_id=${process.env.INSTAGRAM_APP_ID}&redirect_uri=${process.env.INSTAGRAM_REDIRECT_URI}&scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,pages_manage_metadata&response_type=code`;
-  res.json({ authURL });
+  const authURL = `https://www.facebook.com/v16.0/dialog/oauth?client_id=${process.env.INSTAGRAM_APP_ID}&redirect_uri=${process.env.INSTAGRAM_REDIRECT_URI}&scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,pages_manage_metadata,instagram_manage_comments&response_type=code`;
+  // res.json({ authURL });
+  res.redirect(authURL);
   console.log("App ID:", process.env.INSTAGRAM_APP_ID);
   console.log("App Secret:", process.env.INSTAGRAM_APP_SECRET);
 };
@@ -54,12 +55,15 @@ exports.instagramAuthCallback = async (req, res) => {
         username: profile.username,
         fullName: profile.username,
         profilePicture: profile.profile_picture_url,
-        accessToken: access_token
+        accessToken: access_token,
+        isLoggedIn: true
       },
       { new: true, upsert: true }
     );
 
-    return res.status(200).json({ user });
+
+    // return res.status(200).json({ user });
+    res.redirect('http://localhost:3000/success');
 
   } catch (error) {
     console.error('OAuth error:', error.response?.data || error.message);
