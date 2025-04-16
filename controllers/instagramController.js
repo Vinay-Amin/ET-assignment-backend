@@ -63,7 +63,7 @@ exports.instagramAuthCallback = async (req, res) => {
 
 
     // return res.status(200).json({ user });
-    res.redirect('http://localhost:3000/success');
+    res.redirect('et-assignment-frontend.vercel.app/success');
 
   } catch (error) {
     console.error('OAuth error:', error.response?.data || error.message);
