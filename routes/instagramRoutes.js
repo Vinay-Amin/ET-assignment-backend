@@ -171,5 +171,21 @@ router.post('/comments/:mediaId/reply', async (req, res) => {
   }
 });
 
+router.get('/health', async (req, res) => {
+  try {
+    // Check database connection
+    const count = await User.countDocuments();
+    res.json({ 
+      status: 'healthy',
+      dbConnected: true,
+      userCount: count
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      status: 'unhealthy',
+      error: err.message
+    });
+  }
+});
 
 module.exports = router;

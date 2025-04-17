@@ -138,10 +138,17 @@ exports.instagramAuthCallback = async (req, res) => {
         fullName: profile.username,
         profilePicture: profile.profile_picture_url,
         accessToken: access_token,
-        isLoggedIn: true
+        isLoggedIn: true,
+        lastLoginAt: new Date()
       },
       { new: true, upsert: true }
     );
+
+    console.log('User saved/updated:', {
+      id: user._id,
+      username: user.username,
+      isLoggedIn: user.isLoggedIn
+    });
 
     res.redirect('https://et-assignment-frontend.vercel.app/success');
     // res.redirect('http://localhost:3000/success');
