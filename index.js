@@ -10,7 +10,8 @@ const app = express();
 
 // Configure CORS
 app.use(cors({
-  origin: '*', // Allow all origins for testing
+  origin: ['http://localhost:3000', 'et-assignment-frontend.vercel.app'],
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
