@@ -143,8 +143,8 @@ exports.instagramAuthCallback = async (req, res) => {
       { new: true, upsert: true }
     );
 
-    // res.redirect('https://et-assignment-frontend.vercel.app/success');
-    res.redirect('http://localhost:3000/success');
+    res.redirect('https://et-assignment-frontend.vercel.app/success');
+    // res.redirect('http://localhost:3000/success');
     console.log("User saved:", user);
 
   } catch (error) {
